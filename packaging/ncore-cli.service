@@ -1,0 +1,20 @@
+[Unit]
+Description=ncore series watcher
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+EnvironmentFile=/etc/ncore-cli/env
+ExecStart=/usr/local/bin/ncore-cli watch \
+  --media-dir /srv/data1/plexmediaserver/series \
+  --torrent-dir /srv/data1/plexmediaserver/series/torrent \
+  --state /var/lib/ncore-cli/state.json \
+  --interval 6h
+Restart=on-failure
+RestartSec=60
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

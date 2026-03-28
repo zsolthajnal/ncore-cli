@@ -1,0 +1,68 @@
+version: 2
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ignore:
+      - goos: windows
+        goarch: arm64
+
+archives:
+  - formats: [tar.gz]
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+    name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"
+
+checksum:
+  name_template: checksums.txt
+
+brews:
+  - name: ncore-cli
+    repository:
+      owner: zsolthajnal
+      name: homebrew-tap
+      token: "{{ .Env.TAP_GITHUB_TOKEN }}"
+    homepage: https://github.com/zsolthajnal/ncore-cli
+    description: Search and download torrents from ncore.pro
+    license: MIT
+    install: |
+      bin.install "ncore-cli"
+    test: |
+      system "#{bin}/ncore-cli", "help"
+
+nfpms:
+  - package_name: ncore-cli
+    homepage: https://github.com/zsolthajnal/ncore-cli
+    description: Search and download torrents from ncore.pro
+    maintainer: zsolthajnal
+    license: MIT
+    formats:
+      - deb
+      - rpm
+    contents:
+      - src: packaging/ncore-cli.service
+        dst: /lib/systemd/system/ncore-cli.service
+        type: config
+      - src: packaging/ncore-cli.env
+        dst: /etc/ncore-cli/env
+        type: config|noreplace
+        file_info:
+          mode: 0600
+
+release:
+  github:
+    owner: zsolthajnal
+    name: ncore-cli
+  generate_release_notes: true
