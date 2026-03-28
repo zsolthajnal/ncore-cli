@@ -4,16 +4,34 @@ A command-line tool for searching and downloading torrent files from [ncore.pro]
 
 ## Installation
 
-### Pre-built binaries
+### macOS (Apple Silicon)
 
-Download the latest release for your platform from the [Releases](https://github.com/zsolthajnal/ncore-cli/releases) page.
+```sh
+curl -L https://github.com/zsolthajnal/ncore-cli/releases/latest/download/ncore-cli_darwin_arm64 -o /usr/local/bin/ncore-cli
+chmod +x /usr/local/bin/ncore-cli
+```
 
-| Platform | File |
-|----------|------|
-| macOS (Apple Silicon) | `ncore-cli_darwin_arm64` |
-| macOS (Intel) | `ncore-cli_darwin_amd64` |
-| Linux (x86_64) | `ncore-cli_linux_amd64` |
-| Windows (x86_64) | `ncore-cli_windows_amd64.exe` |
+### macOS (Intel)
+
+```sh
+curl -L https://github.com/zsolthajnal/ncore-cli/releases/latest/download/ncore-cli_darwin_amd64 -o /usr/local/bin/ncore-cli
+chmod +x /usr/local/bin/ncore-cli
+```
+
+### Linux (x86_64)
+
+```sh
+curl -L https://github.com/zsolthajnal/ncore-cli/releases/latest/download/ncore-cli_linux_amd64 -o /usr/local/bin/ncore-cli
+chmod +x /usr/local/bin/ncore-cli
+```
+
+### Windows (x86_64)
+
+```powershell
+curl -L https://github.com/zsolthajnal/ncore-cli/releases/latest/download/ncore-cli_windows_amd64.exe -o ncore-cli.exe
+```
+
+Place `ncore-cli.exe` somewhere on your `PATH`.
 
 ### Build from source
 
