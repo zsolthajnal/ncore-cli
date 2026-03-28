@@ -4,28 +4,38 @@ A command-line tool for searching and downloading torrent files from [ncore.pro]
 
 ## Installation
 
-### macOS (Apple Silicon)
+<details>
+<summary><strong>macOS (Apple Silicon)</strong></summary>
 
 ```sh
 curl -L https://github.com/zsolthajnal/ncore-cli/releases/latest/download/ncore-cli_darwin_arm64 -o /usr/local/bin/ncore-cli
 chmod +x /usr/local/bin/ncore-cli
 ```
 
-### macOS (Intel)
+</details>
+
+<details>
+<summary><strong>macOS (Intel)</strong></summary>
 
 ```sh
 curl -L https://github.com/zsolthajnal/ncore-cli/releases/latest/download/ncore-cli_darwin_amd64 -o /usr/local/bin/ncore-cli
 chmod +x /usr/local/bin/ncore-cli
 ```
 
-### Linux (x86_64)
+</details>
+
+<details>
+<summary><strong>Linux (x86_64)</strong></summary>
 
 ```sh
 curl -L https://github.com/zsolthajnal/ncore-cli/releases/latest/download/ncore-cli_linux_amd64 -o /usr/local/bin/ncore-cli
 chmod +x /usr/local/bin/ncore-cli
 ```
 
-### Windows (x86_64)
+</details>
+
+<details>
+<summary><strong>Windows (x86_64)</strong></summary>
 
 ```powershell
 curl -L https://github.com/zsolthajnal/ncore-cli/releases/latest/download/ncore-cli_windows_amd64.exe -o ncore-cli.exe
@@ -33,7 +43,10 @@ curl -L https://github.com/zsolthajnal/ncore-cli/releases/latest/download/ncore-
 
 Place `ncore-cli.exe` somewhere on your `PATH`.
 
-### Build from source
+</details>
+
+<details>
+<summary><strong>Build from source</strong></summary>
 
 Requires [Go 1.22+](https://go.dev/dl/).
 
@@ -42,6 +55,8 @@ git clone https://github.com/zsolthajnal/ncore-cli.git
 cd ncore-cli
 go build -o ncore-cli .
 ```
+
+</details>
 
 ## Configuration
 
@@ -112,6 +127,9 @@ ncore-cli download 3995642 ~/Downloads
 
 ### Categories
 
+<details>
+<summary>All categories</summary>
+
 | Category | Description |
 |----------|-------------|
 | `all_own` | All categories (default) |
@@ -141,6 +159,8 @@ ncore-cli download 3995642 ~/Downloads
 | `xxx_hd` | XXX HD |
 | `misc` | Apps / RIP |
 | `mobil` | Apps / Mobile |
+
+</details>
 
 ## License
 
