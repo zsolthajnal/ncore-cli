@@ -1,0 +1,5 @@
+ncore-cli
+ncore-cli.exe
+dist/
+.envrc
+*.torrent
