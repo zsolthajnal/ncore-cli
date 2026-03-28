@@ -58,6 +58,12 @@ Commands (short aliases in parentheses):
       Stop and remove the ncore-cli systemd service (run as root).
       Credentials and state file are kept; remove manually if unwanted.
 
+  completion <bash|zsh|fish>
+      Output a shell completion script. Load with:
+        bash : source <(ncore-cli completion bash)
+        zsh  : source <(ncore-cli completion zsh)
+        fish : ncore-cli completion fish > ~/.config/fish/completions/ncore-cli.fish
+
 Examples:
   ncore-cli search "breaking bad" hdser_hun
   ncore-cli download 3995642 ~/Downloads
@@ -110,6 +116,8 @@ func main() {
 			fmt.Fprintf(os.Stderr, "error: %v\n", err)
 			os.Exit(1)
 		}
+	case "completion":
+		runCompletion(os.Args[2:])
 	default:
 		fmt.Fprintf(os.Stderr, "error: unknown command %q\n\n", os.Args[1])
 		usage()

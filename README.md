@@ -238,6 +238,43 @@ sudo ncore-cli uninstall
 
 Credentials (`/etc/ncore-cli/env`) and state (`/var/lib/ncore-cli/state.json`) are kept — remove manually if no longer needed.
 
+## Shell completion
+
+<details>
+<summary><strong>bash</strong></summary>
+
+```sh
+# Load for current session
+source <(ncore-cli completion bash)
+
+# Install permanently
+ncore-cli completion bash | sudo tee /etc/bash_completion.d/ncore-cli
+```
+
+</details>
+
+<details>
+<summary><strong>zsh</strong></summary>
+
+```sh
+# Load for current session
+source <(ncore-cli completion zsh)
+
+# Install permanently
+ncore-cli completion zsh > "${fpath[1]}/_ncore-cli"
+```
+
+</details>
+
+<details>
+<summary><strong>fish</strong></summary>
+
+```sh
+ncore-cli completion fish > ~/.config/fish/completions/ncore-cli.fish
+```
+
+</details>
+
 ## Categories
 
 <details>
