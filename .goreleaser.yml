@@ -61,8 +61,10 @@ nfpms:
         file_info:
           mode: 0600
 
+changelog:
+  use: github
+
 release:
   github:
     owner: zsolthajnal
     name: ncore-cli
-  generate_release_notes: true
