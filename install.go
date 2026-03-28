@@ -118,6 +118,44 @@ func runInstall(cfg WatchConfig) error {
 	fmt.Println("  Status : systemctl status ncore-cli")
 	fmt.Println("  Logs   : journalctl -fu ncore-cli")
 	fmt.Println("  Stop   : systemctl stop ncore-cli")
-	fmt.Println("  Disable: systemctl disable ncore-cli")
+	fmt.Println("  Uninstall: sudo ncore-cli uninstall")
+	return nil
+}
+
+func runUninstall() error {
+	if os.Geteuid() != 0 {
+		return fmt.Errorf("uninstall must be run as root (sudo ncore-cli uninstall)")
+	}
+
+	// Stop and disable the service (ignore errors if already stopped/missing)
+	for _, args := range [][]string{
+		{"stop", "ncore-cli"},
+		{"disable", "ncore-cli"},
+	} {
+		cmd := exec.Command("systemctl", args...)
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		_ = cmd.Run()
+	}
+
+	// Remove the unit file
+	unitPath := "/etc/systemd/system/ncore-cli.service"
+	if err := os.Remove(unitPath); err != nil && !os.IsNotExist(err) {
+		return fmt.Errorf("remove unit file: %w", err)
+	}
+	fmt.Printf("Removed %s\n", unitPath)
+
+	// Reload systemd
+	cmd := exec.Command("systemctl", "daemon-reload")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("systemctl daemon-reload: %w", err)
+	}
+
+	fmt.Println("\nncore-cli service removed.")
+	fmt.Println("  Credentials kept at : /etc/ncore-cli/env")
+	fmt.Println("  State kept at       : /var/lib/ncore-cli/state.json")
+	fmt.Println("  Remove manually if no longer needed.")
 	return nil
 }

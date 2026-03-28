@@ -54,6 +54,10 @@ Commands (short aliases in parentheses):
       Install ncore-cli as a systemd service (run as root).
       Accepts the same flags as watch.
 
+  uninstall
+      Stop and remove the ncore-cli systemd service (run as root).
+      Credentials and state file are kept; remove manually if unwanted.
+
 Examples:
   ncore-cli search "breaking bad" hdser_hun
   ncore-cli download 3995642 ~/Downloads
@@ -101,6 +105,11 @@ func main() {
 		cmdWatch(os.Args[2:], false)
 	case "install", "i":
 		cmdWatch(os.Args[2:], true)
+	case "uninstall":
+		if err := runUninstall(); err != nil {
+			fmt.Fprintf(os.Stderr, "error: %v\n", err)
+			os.Exit(1)
+		}
 	default:
 		fmt.Fprintf(os.Stderr, "error: unknown command %q\n\n", os.Args[1])
 		usage()
