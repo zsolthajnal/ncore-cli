@@ -91,6 +91,8 @@ func expandHome(path string) string {
 	return path
 }
 
+var version = "dev"
+
 func main() {
 	if len(os.Args) < 2 || os.Args[1] == "-h" || os.Args[1] == "--help" || os.Args[1] == "help" {
 		usage()
@@ -101,6 +103,8 @@ func main() {
 	}
 
 	switch os.Args[1] {
+	case "version", "--version", "-v":
+		fmt.Println(version)
 	case "search", "s":
 		cmdSearch(os.Args[2:])
 	case "download", "d":
