@@ -45,6 +45,10 @@ Commands (short aliases in parentheses):
         --download-cmd   Command template; use {torrent} and {out_dir}
                          (default: webtorrent download {torrent} --out {out_dir})
         --once           Run one cycle then exit (useful for cron)
+        --require        Comma-separated terms the torrent name must contain
+                         (e.g. "1080p")
+        --exclude        Comma-separated terms the torrent name must not contain
+                         (e.g. "2160p,2160,UHD,4K")
 
   install (i) [flags]
       Install ncore-cli as a systemd service (run as root).
@@ -202,6 +206,8 @@ func cmdWatch(args []string, install bool) {
 	interval := fs.Duration("interval", 6*time.Hour, "Check interval (e.g. 6h, 30m)")
 	downloadCmd := fs.String("download-cmd", "webtorrent download {torrent} --out {out_dir}", "Download command template")
 	once := fs.Bool("once", false, "Run one cycle then exit")
+	require := fs.String("require", "", "Comma-separated terms the torrent name must contain (e.g. 1080p)")
+	exclude := fs.String("exclude", "", "Comma-separated terms the torrent name must not contain (e.g. 2160p,2160,UHD)")
 	_ = fs.Parse(args)
 
 	if *mediaDir == "" {
@@ -219,12 +225,16 @@ func cmdWatch(args []string, install bool) {
 		Interval:    *interval,
 		DownloadCmd: *downloadCmd,
 		Once:        *once,
-		NcoreUser:   mustEnv("NCORE_USER"),
-		NcorePass:   mustEnv("NCORE_PASS"),
 		Categories:  defaultWatchCategories(),
+		Require:     splitCSV(*require),
+		Exclude:     splitCSV(*exclude),
 	}
 
 	if install {
+		// Credentials are optional at install time — they go into /etc/ncore-cli/env
+		// which the user can edit before starting the service.
+		cfg.NcoreUser = os.Getenv("NCORE_USER")
+		cfg.NcorePass = os.Getenv("NCORE_PASS")
 		if err := runInstall(cfg); err != nil {
 			fmt.Fprintf(os.Stderr, "error: %v\n", err)
 			os.Exit(1)
@@ -232,10 +242,26 @@ func cmdWatch(args []string, install bool) {
 		return
 	}
 
+	cfg.NcoreUser = mustEnv("NCORE_USER")
+	cfg.NcorePass = mustEnv("NCORE_PASS")
+
 	if err := runWatcher(cfg); err != nil {
 		fmt.Fprintf(os.Stderr, "error: %v\n", err)
 		os.Exit(1)
 	}
+}
+
+func splitCSV(s string) []string {
+	if s == "" {
+		return nil
+	}
+	var out []string
+	for _, p := range strings.Split(s, ",") {
+		if t := strings.TrimSpace(p); t != "" {
+			out = append(out, t)
+		}
+	}
+	return out
 }
 
 func mustLogin() *Client {

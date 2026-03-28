@@ -56,7 +56,11 @@ func runInstall(cfg WatchConfig) error {
 		if err := os.WriteFile(envPath, []byte(content), 0600); err != nil {
 			return fmt.Errorf("write env file: %w", err)
 		}
-		fmt.Printf("Credentials written to %s\n", envPath)
+		if cfg.NcoreUser == "" || cfg.NcorePass == "" {
+			fmt.Printf("Credentials template written to %s — fill in before starting the service.\n", envPath)
+		} else {
+			fmt.Printf("Credentials written to %s\n", envPath)
+		}
 	} else {
 		fmt.Printf("Env file %s already exists, not overwriting\n", envPath)
 	}

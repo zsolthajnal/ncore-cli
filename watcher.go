@@ -21,6 +21,8 @@ type WatchConfig struct {
 	NcoreUser   string
 	NcorePass   string
 	Categories  []string
+	Require     []string // torrent name must contain at least one of these
+	Exclude     []string // torrent name must not contain any of these
 }
 
 func defaultWatchCategories() []string {
@@ -149,7 +151,7 @@ func downloadEpisode(cfg WatchConfig, state *State, client *Client, ss *SeriesSt
 			log.Printf("[%s] search in %s: %v", ss.FolderName, cat, err)
 			continue
 		}
-		if t := pickBest(results, key); t != nil {
+		if t := pickBest(results, key, cfg.Require, cfg.Exclude); t != nil {
 			best = t
 			break
 		}
@@ -183,16 +185,43 @@ func downloadEpisode(cfg WatchConfig, state *State, client *Client, ss *SeriesSt
 }
 
 // pickBest returns the result with the most seeds whose name contains the
-// episode key (e.g. "S01E05").
-func pickBest(results []Torrent, epKey string) *Torrent {
+// episode key (e.g. "S01E05") and passes the require/exclude filters.
+func pickBest(results []Torrent, epKey string, require, exclude []string) *Torrent {
 	keyLower := strings.ToLower(epKey)
 	bestSeeds := -1
 	var best *Torrent
 	for i := range results {
 		t := &results[i]
-		if !strings.Contains(strings.ToLower(t.Name), keyLower) {
+		nameLower := strings.ToLower(t.Name)
+
+		if !strings.Contains(nameLower, keyLower) {
 			continue
 		}
+		// Must contain at least one of the require terms
+		if len(require) > 0 {
+			matched := false
+			for _, r := range require {
+				if strings.Contains(nameLower, strings.ToLower(r)) {
+					matched = true
+					break
+				}
+			}
+			if !matched {
+				continue
+			}
+		}
+		// Must not contain any of the exclude terms
+		excluded := false
+		for _, e := range exclude {
+			if strings.Contains(nameLower, strings.ToLower(e)) {
+				excluded = true
+				break
+			}
+		}
+		if excluded {
+			continue
+		}
+
 		seeds, _ := strconv.Atoi(t.Seeds)
 		if seeds > bestSeeds {
 			best = t
