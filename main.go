@@ -54,6 +54,10 @@ Commands (short aliases in parentheses):
       Install ncore-cli as a systemd service (run as root).
       Accepts the same flags as watch.
 
+  forget <series-name>
+      Remove a series from the state file so the watcher stops tracking it.
+      The series name is the folder name shown by the scan command.
+
   uninstall
       Stop and remove the ncore-cli systemd service (run as root).
       Credentials and state file are kept; remove manually if unwanted.
@@ -115,6 +119,8 @@ func main() {
 		cmdWatch(os.Args[2:], false)
 	case "install", "i":
 		cmdWatch(os.Args[2:], true)
+	case "forget":
+		cmdForget(os.Args[2:])
 	case "uninstall":
 		if err := runUninstall(); err != nil {
 			fmt.Fprintf(os.Stderr, "error: %v\n", err)
@@ -270,6 +276,37 @@ func cmdWatch(args []string, install bool) {
 		fmt.Fprintf(os.Stderr, "error: %v\n", err)
 		os.Exit(1)
 	}
+}
+
+func cmdForget(args []string) {
+	if len(args) < 1 {
+		fmt.Fprintln(os.Stderr, "usage: ncore-cli forget <series-name>")
+		fmt.Fprintln(os.Stderr, "  series-name is shown by: ncore-cli scan <media-dir>")
+		os.Exit(1)
+	}
+	stateFile := "/var/lib/ncore-cli/state.json"
+	// Allow overriding via --state flag
+	for i, a := range args {
+		if a == "--state" && i+1 < len(args) {
+			stateFile = args[i+1]
+		}
+	}
+	name := args[0]
+
+	state, err := loadState(stateFile)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "error loading state: %v\n", err)
+		os.Exit(1)
+	}
+	if !state.forget(name) {
+		fmt.Fprintf(os.Stderr, "series %q not found in state\n", name)
+		os.Exit(1)
+	}
+	if err := state.save(); err != nil {
+		fmt.Fprintf(os.Stderr, "error saving state: %v\n", err)
+		os.Exit(1)
+	}
+	fmt.Printf("Removed %q from state. It will no longer be tracked.\n", name)
 }
 
 func splitCSV(s string) []string {

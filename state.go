@@ -123,6 +123,16 @@ func (s *State) markDownloaded(folderName, epKey, torrentID string) {
 	}
 }
 
+func (s *State) forget(folderName string) bool {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if _, ok := s.Series[folderName]; !ok {
+		return false
+	}
+	delete(s.Series, folderName)
+	return true
+}
+
 func (s *State) markFailed(folderName, epKey string) {
 	s.mu.Lock()
 	defer s.mu.Unlock()

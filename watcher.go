@@ -111,6 +111,12 @@ func processSeries(cfg WatchConfig, state *State, client *Client, scanned Scanne
 	// Find the latest episode we know about (on disk or previously downloaded).
 	// We only want episodes strictly after this — no backfilling gaps.
 	latestSeason, latestEp := latestKnown(state, scanned.FolderName)
+	if latestSeason == 0 {
+		// No parseable episodes on disk (e.g. only season packs without S##E## filenames).
+		// We don't know where the user is — skip to avoid downloading the entire back catalogue.
+		log.Printf("[%s] No parseable episodes found on disk, skipping (download an episode manually to start tracking)", scanned.FolderName)
+		return nil
+	}
 
 	// Collect aired episodes that come after what we already have.
 	var toDownload []Episode
