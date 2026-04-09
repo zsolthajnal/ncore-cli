@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"text/template"
 )
 
@@ -22,7 +23,9 @@ ExecStart={{.ExecPath}} watch \
   --torrent-dir {{.TorrentDir}} \
   --state {{.StateFile}} \
   --interval {{.Interval}} \
-  --download-cmd "{{.DownloadCmd}}"
+  --download-cmd "{{.DownloadCmd}}"{{if .Require}} \
+  --require {{.Require}}{{end}}{{if .Exclude}} \
+  --exclude {{.Exclude}}{{end}}
 Restart=on-failure
 RestartSec=60
 StandardOutput=journal
@@ -83,6 +86,8 @@ func runInstall(cfg WatchConfig) error {
 		StateFile   string
 		Interval    string
 		DownloadCmd string
+		Require     string
+		Exclude     string
 	}{
 		ExecPath:    execPath,
 		MediaDir:    cfg.MediaDir,
@@ -90,6 +95,8 @@ func runInstall(cfg WatchConfig) error {
 		StateFile:   cfg.StateFile,
 		Interval:    cfg.Interval.String(),
 		DownloadCmd: cfg.DownloadCmd,
+		Require:     strings.Join(cfg.Require, ","),
+		Exclude:     strings.Join(cfg.Exclude, ","),
 	}); err != nil {
 		return err
 	}
