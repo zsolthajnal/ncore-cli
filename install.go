@@ -100,12 +100,14 @@ func runInstall(cfg WatchConfig) error {
 	}
 	fmt.Printf("Unit file written to %s\n", unitPath)
 
-	// Reload systemd and enable + start the service
-	for _, args := range [][]string{
-		{"daemon-reload"},
-		{"enable", "ncore-cli"},
-		{"start", "ncore-cli"},
-	} {
+	credsMissing := cfg.NcoreUser == "" || cfg.NcorePass == ""
+
+	// Reload systemd and enable the service; only start if credentials are present.
+	steps := [][]string{{"daemon-reload"}, {"enable", "ncore-cli"}}
+	if !credsMissing {
+		steps = append(steps, []string{"start", "ncore-cli"})
+	}
+	for _, args := range steps {
 		cmd := exec.Command("systemctl", args...)
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
@@ -114,10 +116,18 @@ func runInstall(cfg WatchConfig) error {
 		}
 	}
 
-	fmt.Println("\nncore-cli service installed and started.")
-	fmt.Println("  Status : systemctl status ncore-cli")
-	fmt.Println("  Logs   : journalctl -fu ncore-cli")
-	fmt.Println("  Stop   : systemctl stop ncore-cli")
+	fmt.Println()
+	if credsMissing {
+		fmt.Println("ncore-cli service installed but NOT started — credentials are missing.")
+		fmt.Println()
+		fmt.Printf("  Edit : %s\n", envPath)
+		fmt.Println("         Set NCORE_USER and NCORE_PASS, then run:")
+		fmt.Println("  Start: systemctl start ncore-cli")
+	} else {
+		fmt.Println("ncore-cli service installed and started.")
+		fmt.Println("  Status : systemctl status ncore-cli")
+		fmt.Println("  Logs   : journalctl -fu ncore-cli")
+	}
 	fmt.Println("  Uninstall: sudo ncore-cli uninstall")
 	return nil
 }
