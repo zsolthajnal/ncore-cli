@@ -108,13 +108,21 @@ func processSeries(cfg WatchConfig, state *State, client *Client, scanned Scanne
 	}
 	ss.LastChecked = time.Now()
 
-	// Collect aired episodes not yet on disk or downloaded
+	// Find the latest episode we know about (on disk or previously downloaded).
+	// We only want episodes strictly after this — no backfilling gaps.
+	latestSeason, latestEp := latestKnown(state, scanned.FolderName)
+
+	// Collect aired episodes that come after what we already have.
 	var toDownload []Episode
 	for _, ep := range episodes {
 		if ep.Season == 0 || ep.Number == 0 {
 			continue // skip specials
 		}
 		if !ep.HasAired() {
+			continue
+		}
+		// Skip anything at or before our latest known episode.
+		if latestSeason > 0 && !episodeAfter(ep, latestSeason, latestEp) {
 			continue
 		}
 		if state.isKnown(scanned.FolderName, ep.Key()) {
@@ -229,6 +237,35 @@ func pickBest(results []Torrent, epKey string, require, exclude []string) *Torre
 		}
 	}
 	return best
+}
+
+// latestKnown returns the highest (season, episode) pair that is marked
+// present or downloaded for the given series. Returns (0,0) if nothing known.
+func latestKnown(state *State, seriesName string) (int, int) {
+	ss := state.getSeries(seriesName)
+	latestS, latestE := 0, 0
+	for key, ep := range ss.Episodes {
+		if ep.Status != "present" && ep.Status != "downloaded" {
+			continue
+		}
+		s, e := parseEpKey(key)
+		if s > latestS || (s == latestS && e > latestE) {
+			latestS, latestE = s, e
+		}
+	}
+	return latestS, latestE
+}
+
+// episodeAfter returns true if ep comes after (latestS, latestE).
+func episodeAfter(ep Episode, latestS, latestE int) bool {
+	return ep.Season > latestS || (ep.Season == latestS && ep.Number > latestE)
+}
+
+// parseEpKey parses "S01E05" into (1, 5).
+func parseEpKey(key string) (int, int) {
+	var s, e int
+	fmt.Sscanf(strings.ToUpper(key), "S%02dE%02d", &s, &e)
+	return s, e
 }
 
 func runDownloadCmd(cmdTemplate, torrentPath, outDir string) error {
